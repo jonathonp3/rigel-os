@@ -2,9 +2,10 @@
 type: rpm-ostree
 install:
   # We use a static mirror (RIT) to avoid the DNS redirector failure
-  - https://mirrors.rit.edu/rpmfusion/free/fedora/rpmfusion-free-release-44.noarch.rpm
-  - https://mirrors.rit.edu/rpmfusion/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm
-  
+  # https://mirrors.rit.edu/rpmfusion/free/fedora/rpmfusion-free-release-44.noarch.rpm
+  # https://mirrors.rit.edu/rpmfusion/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm
+  - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm
+  - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm  
   # https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm
   # https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm
 repos:
