@@ -12,7 +12,7 @@ chmod +x /usr/libexec/rigel-os-optimization.sh
 systemctl enable \
     sshd.service \
     # docker.service
-    wolf-os-optimization.service \
+    rigel-os-optimization.service \
     apps-tmpfiles.service
 
 echo "✅ Wolf-OS Custom Assembly Complete! Ready for Deployment."
