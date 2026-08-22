@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: rigel-os
+description: A declarative, high-performance Fedora Atomic workstation.
+base-image: quay.io/fedora/fedora-silverblue
+image-version: 44
+
+modules:
+  # 1. Register the repositories
+  - from-file: ../modules/repositories.yml
+  
+  # 2.  Remove Firefox
+  - from-file: ../modules/remove-firefox.yml
+  
+  - from-file: ../modules/remove-bookmarks.yml
+  
+  # 3. Remove Toolbox
+  - from-file: ../modules/remove-toolbox.yml
+
+  # 4. Remove ffmpeg free codecs
+  - from-file: ../modules/remove-codecs.yml
+  
+  # 5. # Enable hardware acceleration for H.264/H.265/VC1 codecs (replaces mesa-va-drivers)
+  - from-file: ../modules/mesa-freeworld.yml
+
+  # 6. Install the software
+  - from-file: ../modules/packages.yml
+  
+  # 7. 
+  - type: files
+    files:
+      # Policy
+      - source: usr/etc/containers/policy.json
+        destination: /usr/etc/containers/policy.json
+      - source: usr/etc/pki/containers/rigel-os.pub
+        destination: /usr/etc/pki/containers/rigel-os.pub
+
+      # Key to signature
+      - source: usr/etc/containers/registries.d/rigel-os.yaml
+        destination: /usr/etc/containers/registries.d/rigel-os.yaml
+      
+      # Optimization
+      - source: usr/libexec/rigel-os-optimization.sh
+        destination: /usr/libexec/rigel-os-optimization.sh
+      - source: usr/lib/systemd/system/rigel-os-optimization.service
+        destination: /usr/lib/systemd/system/rigel-os-optimization.service
+      
+      - source: usr/lib/tmpfiles.d/apps.conf
+        destination: /usr/lib/tmpfiles.d/apps.conf
+      - source: usr/lib/systemd/system/apps-tmpfiles.service
+        destination: /usr/lib/systemd/system/apps-tmpfiles.service 
+      
+      - source: usr/lib/sysusers.d/rigel-os.conf  
+        destination: /usr/lib/sysusers.d/rigel-os.conf
+
+  # 8. Install backgrounds
+  - from-file: ../modules/backgrounds.yml        
+
+  # 9. Run the assembly script
+  - type: script
+    scripts:
+      - setup-rigel-os.sh
+      

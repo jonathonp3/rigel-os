@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-v1.json
+type: rpm-ostree
+
+install:
+  # distrobox
+  - gparted
+  # pluma
+  - vim-enhanced
+  - vlc
+  # yt-dlp
+
+  # LLM container
+  # clinfo
+  # fuse
+  # fuse-libs
+  
+  # Codecs rpmfusion 
+  - ffmpeg
+  - gstreamer1-plugins-ugly
+  - gstreamer1-libav
+  # HandBrake-gui
+  - mpv
+  
+  # Mesa
+  # mesa-va-drivers-freeworld
+  # mesa-vulkan-drivers-freeworld
+  
+  # Image
+  - libwebp-tools
+  - libjxl-utils
+  
+  # PIA VPN
+  - sirius-os-pia-installer
+
+  # Virtualisation stack
+  # sirius-os-virtualization
+  
+  # Docker
+  # docker-ce
+  # docker-ce-cli
+  # containerd.io
+  # docker-buildx-plugin
+  # docker-compose-plugin
