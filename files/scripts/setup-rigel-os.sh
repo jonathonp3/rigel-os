@@ -9,9 +9,9 @@ echo "⚙️ Setting up First-Boot cleanup service..."
 chmod +x /usr/libexec/rigel-os-optimization.sh
 
 # --- 3. FINALISE ---
+# docker.service is intentionally disabled for now
 systemctl enable \
     sshd.service \
-    # docker.service
     rigel-os-optimization.service \
     apps-tmpfiles.service
 
