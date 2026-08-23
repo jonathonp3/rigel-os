@@ -8,6 +8,9 @@ install:
   - vim-enhanced
   - vlc
   # yt-dlp
+  
+  # share
+  - sshfs
 
   # LLM container
   # clinfo
