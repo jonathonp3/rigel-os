@@ -19,7 +19,7 @@ install:
   
   # Torrent client
   - qbittorrent
-  - transmission-gtk
+  # transmission-gtk
 
   # Codecs rpmfusion 
   - ffmpeg
