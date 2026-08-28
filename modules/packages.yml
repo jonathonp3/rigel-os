@@ -17,6 +17,10 @@ install:
   # fuse
   # fuse-libs
   
+  # Torrent client
+  - qbittorrent
+  - transmission-gtk
+
   # Codecs rpmfusion 
   - ffmpeg
   - gstreamer1-plugins-ugly

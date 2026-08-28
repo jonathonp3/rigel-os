@@ -87,9 +87,7 @@ log "📦 Installing required Flatpaks..."
 # Array of flatpaks to install
 flatpaks=(
     "com.mattjakeman.ExtensionManager"
-    "com.transmissionbt.Transmission"
     "org.mozilla.firefox"
-    "org.qbittorrent.qBittorrent"
 )
 
 for app in "${flatpaks[@]}"; do
