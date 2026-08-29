@@ -4,29 +4,15 @@ type: script
 scripts:
   - name: "Install wayland-spice-clipboard-fix"
     commands:
-      - |
-        # Clone the repository
-        git clone https://github.com/chrisbelson/wayland-spice-clipboard-fix.git /tmp/spice-fix
-        cd /tmp/spice-fix
-        git checkout 7c4ca50
-        
-        # Create directory for the bridge script
-        mkdir -p /usr/local/libexec
-        
-        # Copy the bridge script
-        cp scripts/wayland-spice-clipboard /usr/local/libexec/
-        chmod +x /usr/local/libexec/wayland-spice-clipboard
-        
-        # Create systemd user service directory in /etc/skel
-        mkdir -p /etc/skel/.config/systemd/user
-        
-        # Copy the service file
-        cp systemd/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/
-        
-        # Also create default.target.wants to enable the service
-        mkdir -p /etc/skel/.config/systemd/user/default.target.wants
-        ln -sf /etc/skel/.config/systemd/user/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/default.target.wants/
-        
-        # Clean up
-        cd /
-        rm -rf /tmp/spice-fix
+      - git clone https://github.com/chrisbelson/wayland-spice-clipboard-fix.git /tmp/spice-fix
+      - cd /tmp/spice-fix
+      - git checkout 7c4ca50
+      - mkdir -p /usr/local/libexec
+      - cp scripts/wayland-spice-clipboard /usr/local/libexec/
+      - chmod +x /usr/local/libexec/wayland-spice-clipboard
+      - mkdir -p /etc/skel/.config/systemd/user
+      - cp systemd/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/
+      - mkdir -p /etc/skel/.config/systemd/user/default.target.wants
+      - ln -sf /etc/skel/.config/systemd/user/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/default.target.wants/
+      - cd /
+      - rm -rf /tmp/spice-fix
