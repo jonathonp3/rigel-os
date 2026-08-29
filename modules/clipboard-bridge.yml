@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-v1.json
+type: script
+scripts:
+  - name: "Install wayland-spice-clipboard-fix"
+    commands:
+      - |
+        # Install required packages (already in packages.yml, but ensure they're available)
+        # Clone the bridge
+        git clone https://github.com/chrisbelson/wayland-spice-clipboard-fix.git /tmp/spice-fix
+        cd /tmp/spice-fix
+        # Install for the user context - we'll set it up as a system service instead
+        # Copy the script to a system location
+        mkdir -p /usr/local/libexec
+        cp spice-clipboard.sh /usr/local/libexec/
+        chmod +x /usr/local/libexec/spice-clipboard.sh
+        
+        # Create a systemd service file for all users
+        cat > /etc/systemd/user/wayland-spice-clipboard.service << 'EOF'
+        [Unit]
+        Description=Wayland to X11 clipboard sync for SPICE
+        After=graphical-session.target
+        Wants=graphical-session.target
+        
+        [Service]
+        Type=simple
+        ExecStart=/usr/local/libexec/spice-clipboard.sh
+        Restart=always
+        RestartSec=2
+        
+        [Install]
+        WantedBy=default.target
+        EOF
+        
+        # Clean up
+        rm -rf /tmp/spice-fix
