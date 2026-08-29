@@ -101,10 +101,17 @@ done
 
 # 10. Setup clipboard bridge for KDE Wayland to SPICE
 log "🔧 Setting up clipboard bridge for KDE Wayland..."
-# Check if xclip and wl-clipboard are installed (they should be from packages.yml)
+# Check if required tools are available (they should be from packages.yml)
 if command -v wl-paste &>/dev/null && command -v xclip &>/dev/null; then
-    # Create the bridge script
-    cat > /usr/local/bin/spice-clipboard-bridge << 'BRIDGE_EOF'
+    # Ensure the bridge script exists (it should be copied during build, but let's verify)
+    if [ -f "/usr/local/libexec/wayland-spice-clipboard" ]; then
+        # Use the official bridge script if available
+        BRIDGE_SCRIPT="/usr/local/libexec/wayland-spice-clipboard"
+        log "✅ Using official bridge script from build"
+    else
+        # Fallback: Create a minimal bridge script (this is the fallback version)
+        log "ℹ️  Official bridge not found, creating fallback script..."
+        cat > /usr/local/bin/spice-clipboard-bridge << 'BRIDGE_EOF'
 #!/bin/bash
 # SPICE Clipboard Bridge for KDE Wayland
 # Continuously syncs Wayland primary clipboard to X11 clipboard
@@ -115,34 +122,73 @@ while true; do
     sleep 1
 done
 BRIDGE_EOF
-    chmod +x /usr/local/bin/spice-clipboard-bridge
-    log "✅ Clipboard bridge script created"
+        chmod +x /usr/local/bin/spice-clipboard-bridge
+        BRIDGE_SCRIPT="/usr/local/bin/spice-clipboard-bridge"
+        log "✅ Fallback clipboard bridge script created"
+    fi
     
-    # Create system service (since user service won't work in build environment)
+    # Create system service
     cat > /etc/systemd/system/spice-clipboard-bridge.service << 'SERVICE_EOF'
 [Unit]
 Description=SPICE Wayland Clipboard Bridge for KDE
-After=multi-user.target
-Requires=multi-user.target
+After=graphical.target
+Wants=graphical.target
+ConditionPathExists=/usr/bin/wl-paste
+ConditionPathExists=/usr/bin/xclip
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/spice-clipboard-bridge
+ExecStart=/usr/local/libexec/wayland-spice-clipboard
 Restart=always
-RestartSec=5
+RestartSec=3
 StandardOutput=journal
 StandardError=journal
+User=%I
+Group=%I
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
 SERVICE_EOF
+    
+    # Update the ExecStart path to use the correct script
+    sed -i "s|ExecStart=.*|ExecStart=$BRIDGE_SCRIPT|g" /etc/systemd/system/spice-clipboard-bridge.service
+    
     log "✅ Clipboard bridge service file created"
     
-    # Enable the service
+    # Create user-level service for the current user
+    mkdir -p ~/.config/systemd/user
+    cat > ~/.config/systemd/user/wayland-spice-clipboard.service << 'USER_SERVICE_EOF'
+[Unit]
+Description=SPICE Wayland Clipboard Bridge for KDE (User)
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/libexec/wayland-spice-clipboard
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+USER_SERVICE_EOF
+    
+    # Update user service ExecStart too
+    sed -i "s|ExecStart=.*|ExecStart=$BRIDGE_SCRIPT|g" ~/.config/systemd/user/wayland-spice-clipboard.service
+    
+    # Enable and start both services
+    systemctl daemon-reload
     systemctl enable spice-clipboard-bridge.service 2>/dev/null || true
-    log "✅ Clipboard bridge service enabled"
+    systemctl start spice-clipboard-bridge.service 2>/dev/null || true
+    
+    systemctl --user daemon-reload
+    systemctl --user enable wayland-spice-clipboard.service 2>/dev/null || true
+    systemctl --user start wayland-spice-clipboard.service 2>/dev/null || true
+    
+    log "✅ Clipboard bridge services enabled and started"
 else
-    log "⚠️  xclip or wl-clipboard not found - clipboard bridge skipped"
+    log "⚠️  wl-paste or xclip not found - clipboard bridge skipped"
+    log "📋 Ensure xclip and wl-clipboard are in packages.yml"
 fi
 
 # 11. Disable the service after first boot (since it's a one-time optimization)

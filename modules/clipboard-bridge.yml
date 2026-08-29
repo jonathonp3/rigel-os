@@ -4,32 +4,30 @@ scripts:
   - name: "Install wayland-spice-clipboard-fix"
     commands:
       - |
-        # Install required packages (already in packages.yml, but ensure they're available)
-        # Clone the bridge
+        # Clone the repository
         git clone https://github.com/chrisbelson/wayland-spice-clipboard-fix.git /tmp/spice-fix
         cd /tmp/spice-fix
-        # Install for the user context - we'll set it up as a system service instead
-        # Copy the script to a system location
+        git checkout 7c4ca50
+        
+        # Create directory for the bridge script
         mkdir -p /usr/local/libexec
-        cp spice-clipboard.sh /usr/local/libexec/
-        chmod +x /usr/local/libexec/spice-clipboard.sh
         
-        # Create a systemd service file for all users
-        cat > /etc/systemd/user/wayland-spice-clipboard.service << 'EOF'
-        [Unit]
-        Description=Wayland to X11 clipboard sync for SPICE
-        After=graphical-session.target
-        Wants=graphical-session.target
+        # Copy the bridge script
+        cp scripts/wayland-spice-clipboard /usr/local/libexec/
+        chmod +x /usr/local/libexec/wayland-spice-clipboard
         
-        [Service]
-        Type=simple
-        ExecStart=/usr/local/libexec/spice-clipboard.sh
-        Restart=always
-        RestartSec=2
+        # Create systemd user service directory in /etc/skel
+        # This ensures the service is available for the first user on boot
+        mkdir -p /etc/skel/.config/systemd/user
         
-        [Install]
-        WantedBy=default.target
-        EOF
+        # Copy the service file
+        cp systemd/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/
+        
+        # Also create default.target.wants to enable the service
+        mkdir -p /etc/skel/.config/systemd/user/default.target.wants
+        ln -sf /etc/skel/.config/systemd/user/wayland-spice-clipboard.service \
+               /etc/skel/.config/systemd/user/default.target.wants/
         
         # Clean up
+        cd /
         rm -rf /tmp/spice-fix

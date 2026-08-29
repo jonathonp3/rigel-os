@@ -21,11 +21,8 @@ install:
   - qbittorrent
  
   - spice-vdagent
-  # For X11 clipboard access
-  - xclip    
-  # Provides wl-paste and wl-copy, the Wayland-native tools for interacting with the clipboard. 
+  - xclip
   - wl-clipboard
-  # transmission-gtk
 
   # Codecs rpmfusion 
   - ffmpeg
