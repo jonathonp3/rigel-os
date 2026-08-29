@@ -18,7 +18,6 @@ scripts:
         chmod +x /usr/local/libexec/wayland-spice-clipboard
         
         # Create systemd user service directory in /etc/skel
-        # This ensures the service is available for the first user on boot
         mkdir -p /etc/skel/.config/systemd/user
         
         # Copy the service file
@@ -26,8 +25,7 @@ scripts:
         
         # Also create default.target.wants to enable the service
         mkdir -p /etc/skel/.config/systemd/user/default.target.wants
-        ln -sf /etc/skel/.config/systemd/user/wayland-spice-clipboard.service \
-               /etc/skel/.config/systemd/user/default.target.wants/
+        ln -sf /etc/skel/.config/systemd/user/wayland-spice-clipboard.service /etc/skel/.config/systemd/user/default.target.wants/
         
         # Clean up
         cd /
