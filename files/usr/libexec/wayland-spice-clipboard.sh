@@ -1,32 +1,37 @@
 #!/bin/bash
 # SPDX-License-Identifier: MIT
-#
-# wayland-spice-clipboard - Syncs the Wayland primary clipboard to the X11 clipboard
-# for use with SPICE in KDE environments
+# SPICE Clipboard Bridge for KDE Wayland
+# Syncs Wayland and KDE clipboards to X11 for SPICE compatibility
 
 set -euo pipefail
 
-# Function to get the primary selection from Wayland
-get_primary() {
+get_wayland_clipboard() {
     wl-paste --primary 2>/dev/null || echo ""
 }
 
-# Function to set the X11 clipboard
-set_x11_clipboard() {
-    local text="$1"
-    if [ -n "$text" ]; then
-        echo "$text" | xclip -selection clipboard -in 2>/dev/null
-    fi
+get_kde_clipboard() {
+    qdbus org.kde.klipper /klipper getClipboardContents 2>/dev/null || echo ""
 }
 
-# Main loop - continuously sync Wayland primary to X11 clipboard
 while true; do
-    # Watch the Wayland primary selection for changes
-    wl-paste --primary --watch 2>/dev/null | while read -r data; do
-        if [ -n "$data" ]; then
-            echo "$data" | xclip -selection clipboard -in 2>/dev/null
+    # Get clipboard from Wayland primary
+    WAYLAND=$(get_wayland_clipboard)
+    
+    if [ -n "$WAYLAND" ]; then
+        CURRENT_X11=$(xclip -selection clipboard -out 2>/dev/null || echo "")
+        if [ "$WAYLAND" != "$CURRENT_X11" ]; then
+            echo "$WAYLAND" | xclip -selection clipboard -in 2>/dev/null
         fi
-    done
-    # Small sleep to prevent CPU spinning if something goes wrong
-    sleep 1
+    fi
+    
+    # Also try KDE clipboard
+    KDE_CLIP=$(get_kde_clipboard)
+    if [ -n "$KDE_CLIP" ]; then
+        CURRENT_X11=$(xclip -selection clipboard -out 2>/dev/null || echo "")
+        if [ "$KDE_CLIP" != "$CURRENT_X11" ]; then
+            echo "$KDE_CLIP" | xclip -selection clipboard -in 2>/dev/null
+        fi
+    fi
+    
+    sleep 0.5
 done

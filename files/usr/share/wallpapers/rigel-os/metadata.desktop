@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Rigel-OS Wallpapers
+Type=Service
+X-KDE-ParentApp=plasma-desktop
+X-KDE-PluginInfo-Category=Wallpaper
+X-KDE-PluginInfo-Name=rigel-os
+
+[Wallpaper]
+DefaultFilePrefix=rigel-os-
+Screenshot=preview.png
+
+[Settings]
+MultiImage=yes
+Slideshow=yes
+SlideInterval=300

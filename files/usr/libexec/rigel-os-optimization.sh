@@ -17,7 +17,6 @@ log() {
 log "🚀 Starting Wolf-OS First-Boot Optimization..."
 
 # 1. Integrity Check: Fix any interrupted previous attempts
-# Using timeout to prevent hanging, and true to always return success
 log "🔧 Running flatpak repair (may take several minutes)..."
 timeout 300 flatpak repair --system --verbose || {
     exit_code=$?
@@ -99,7 +98,8 @@ for app in "${flatpaks[@]}"; do
     fi
 done
 
-# In section 10 of rigel-os-optimization.sh:
+# 10. Setup clipboard bridge for KDE Wayland to SPICE
+log "🔧 Setting up clipboard bridge for KDE Wayland..."
 if command -v wl-paste &>/dev/null && command -v xclip &>/dev/null; then
     # Use the pre-installed bridge script from /usr/libexec
     if [ -f "/usr/libexec/wayland-spice-clipboard.sh" ]; then
@@ -110,8 +110,8 @@ if command -v wl-paste &>/dev/null && command -v xclip &>/dev/null; then
         cat > /usr/local/bin/spice-clipboard-bridge << 'BRIDGE_EOF'
 #!/bin/bash
 while true; do
-    wl-paste --primary --watch bash -c "wl-paste --primary | xclip -selection clipboard -in 2>/dev/null" 2>/dev/null
-    sleep 1
+    wl-paste --primary 2>/dev/null | xclip -selection clipboard -in 2>/dev/null
+    sleep 0.5
 done
 BRIDGE_EOF
         chmod +x /usr/local/bin/spice-clipboard-bridge
@@ -124,15 +124,12 @@ BRIDGE_EOF
 [Unit]
 Description=SPICE Wayland Clipboard Bridge for KDE
 After=multi-user.target
-Requires=multi-user.target
 
 [Service]
 Type=simple
 ExecStart=/usr/libexec/wayland-spice-clipboard.sh
 Restart=always
 RestartSec=3
-StandardOutput=journal
-StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
@@ -144,7 +141,7 @@ SERVICE_EOF
     systemctl daemon-reload
     systemctl enable spice-clipboard-bridge.service 2>/dev/null || true
     systemctl start spice-clipboard-bridge.service 2>/dev/null || true
-    log "✅ Clipboard bridge service enabled"
+    log "✅ Clipboard bridge service enabled and started"
 else
     log "⚠️  wl-paste or xclip not found - clipboard bridge skipped"
 fi

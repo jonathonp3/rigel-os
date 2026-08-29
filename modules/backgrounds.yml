@@ -1,11 +1,7 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-v1.json
 type: files
+
 files:
-  # Copy the entire folder of 21 wallpapers
-  - source: usr/share/backgrounds/rigel-os
-    destination: /usr/share/backgrounds/rigel-os
-
-  # Copy the XML so they appear in the GNOME Background picker
-  - source: usr/share/gnome-background-properties/rigel-os.xml
-    destination: /usr/share/gnome-background-properties/rigel-os.xml
-
+  # Copy wallpapers to KDE's wallpaper directory
+  - source: usr/share/wallpapers/rigel-os
+    destination: /usr/share/wallpapers/rigel-os
