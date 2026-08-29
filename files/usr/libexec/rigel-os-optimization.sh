@@ -99,7 +99,53 @@ for app in "${flatpaks[@]}"; do
     fi
 done
 
-# 10. Disable the service after first boot (since it's a one-time optimization)
+# 10. Setup clipboard bridge for KDE Wayland to SPICE
+log "🔧 Setting up clipboard bridge for KDE Wayland..."
+# Check if xclip and wl-clipboard are installed (they should be from packages.yml)
+if command -v wl-paste &>/dev/null && command -v xclip &>/dev/null; then
+    # Create the bridge script
+    cat > /usr/local/bin/spice-clipboard-bridge << 'BRIDGE_EOF'
+#!/bin/bash
+# SPICE Clipboard Bridge for KDE Wayland
+# Continuously syncs Wayland primary clipboard to X11 clipboard
+
+while true; do
+    # Sync primary selection (middle-click) to X11 clipboard (Ctrl+V)
+    wl-paste --primary --watch bash -c "wl-paste --primary | xclip -selection clipboard -in 2>/dev/null" 2>/dev/null
+    sleep 1
+done
+BRIDGE_EOF
+    chmod +x /usr/local/bin/spice-clipboard-bridge
+    log "✅ Clipboard bridge script created"
+    
+    # Create system service (since user service won't work in build environment)
+    cat > /etc/systemd/system/spice-clipboard-bridge.service << 'SERVICE_EOF'
+[Unit]
+Description=SPICE Wayland Clipboard Bridge for KDE
+After=multi-user.target
+Requires=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/spice-clipboard-bridge
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+    log "✅ Clipboard bridge service file created"
+    
+    # Enable the service
+    systemctl enable spice-clipboard-bridge.service 2>/dev/null || true
+    log "✅ Clipboard bridge service enabled"
+else
+    log "⚠️  xclip or wl-clipboard not found - clipboard bridge skipped"
+fi
+
+# 11. Disable the service after first boot (since it's a one-time optimization)
 log "🔧 Disabling first-boot service..."
 systemctl disable rigel-os-optimization.service 2>/dev/null || true
 log "✅ Service disabled for future boots"
