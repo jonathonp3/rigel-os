@@ -19,6 +19,7 @@ install:
   
   # Torrent client
   - qbittorrent
+  - spice-vdagent
   # transmission-gtk
 
   # Codecs rpmfusion 
