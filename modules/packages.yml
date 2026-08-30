@@ -20,6 +20,7 @@ install:
   # Torrent client
   - qbittorrent
  
+ # Clipboard vm to host support  
   - spice-vdagent
   - xclip
   - wl-clipboard
@@ -40,7 +41,7 @@ install:
   - libjxl-utils
   
   # PIA VPN
-  - sirius-os-pia-installer
+  # sirius-os-pia-installer
 
   # Virtualisation stack
   # sirius-os-virtualization
