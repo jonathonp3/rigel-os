@@ -8,7 +8,7 @@ install:
   - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm  
   # https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm
   # https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm
-repos:
+#repos:
   # Use 'repos' for these because they ARE .repo text files
   # https://copr.fedorainfracloud.org/coprs/jonathonp3/sirius-os/repo/fedora-44/jonathonp3-sirius-os-fedora-44.repo
   # https://pkgs.tailscale.com/stable/fedora/tailscale.repo
