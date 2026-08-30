@@ -24,6 +24,9 @@ install:
   - spice-vdagent
   - xclip
   - wl-clipboard
+  
+ # Konsole
+ - adobe-source-code-pro-fonts
 
   # Codecs rpmfusion 
   - ffmpeg
