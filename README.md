@@ -1,9 +1,9 @@
 # Rigel-OS
 
-Rigel-OS is my personal OS image built from Fedora Silverblue with minimal packages and Private Internet Access VPN Linux App.
+Rigel-OS is my personal OS image built from Fedora Kinoite with minimal packages and Private Internet Access VPN Linux App.
 
 ## Components
-- Fedora Silverblue (base)
+- Fedora Kinoite (base)
 - PIA Linux App
 
 ## License
@@ -12,9 +12,9 @@ See `LICENSE`
 
 ## Step 1. Rebase to Rigel-OS (First Hop (Unverified))
 
-1. Rebase from Fedora Silverblue to the unsigned Rigel-OS image:
+1. Rebase from Fedora Kinoite to the unsigned Rigel-OS image:
 ```bash
-   sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jonathonp3/rigel-os:latest
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jonathonp3/rigel-os:latest
 ```
 
 2. Reboot to complete the rebase:
@@ -26,7 +26,7 @@ systemctl reboot
 
 1. Enable "Factory Merge" moves key and policy into place.
 ```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jonathonp3/rigel-os:latest
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jonathonp3/rigel-os:latest
 ```
 
 2. Reboot again to complete the installation
@@ -58,7 +58,7 @@ podman run --pull always --rm ghcr.io/blue-build/cli:latest-installer | bash
 sudo bluebuild generate-iso --iso-name rigel-os.iso image ghcr.io/jonathonp3/rigel-os
 ```
 
-## Rebase to unsigned official Silverblue 44
+## Rebase to unsigned official Kinoite 44
 
 Rigel-OS policy is set to reject everything that isn't signed by the repository key. You will need to reset local policy to allow unsigned images:
 
@@ -74,11 +74,11 @@ sudo bash -c 'cat <<EOF > /etc/containers/policy.json
 }
 EOF'
 ```
-2. Rebase to Official Fedora Silverblue 44:
+2. Rebase to Official Fedora Kinoite 44:
 ```bash
 sudo rpm-ostree rebase \
-  ostree-unverified-registry:quay.io/fedora/fedora-silverblue:44
+  ostree-unverified-registry:quay.io/fedora-ostree-desktops/kinoite:44
 ```
 
-Note: Fedora has moved Silverblue to be delivered as a container (OCI) image, which is pulled via ostree-unverified-registry: rather than the legacy fedora: OSTree remote.
+Note: Fedora has moved Kinoite to be delivered as a container (OCI) image, which is pulled via ostree-unverified-registry: rather than the legacy fedora: OSTree remote.
 
