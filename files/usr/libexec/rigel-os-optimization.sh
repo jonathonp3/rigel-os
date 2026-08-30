@@ -98,53 +98,60 @@ for app in "${flatpaks[@]}"; do
     fi
 done
 
-# 10. Setup clipboard bridge for KDE Wayland to SPICE
-log "🔧 Setting up clipboard bridge for KDE Wayland..."
-if command -v wl-paste &>/dev/null && command -v xclip &>/dev/null; then
-    # Use the pre-installed bridge script from /usr/libexec
-    if [ -f "/usr/libexec/wayland-spice-clipboard.sh" ]; then
-        BRIDGE_SCRIPT="/usr/libexec/wayland-spice-clipboard.sh"
-        log "✅ Using pre-installed bridge script from /usr/libexec"
-    else
-        # Fallback: create the script
-        cat > /usr/local/bin/spice-clipboard-bridge << 'BRIDGE_EOF'
-#!/bin/bash
-while true; do
-    wl-paste --primary 2>/dev/null | xclip -selection clipboard -in 2>/dev/null
-    sleep 0.5
-done
-BRIDGE_EOF
-        chmod +x /usr/local/bin/spice-clipboard-bridge
-        BRIDGE_SCRIPT="/usr/local/bin/spice-clipboard-bridge"
-        log "✅ Fallback clipboard bridge script created"
-    fi
-    
-    # Create system service
-    cat > /etc/systemd/system/spice-clipboard-bridge.service << 'SERVICE_EOF'
+# 10. Setup clipboard bridge for Wayland → X11
+log "🔧 Setting up clipboard bridge for Wayland → X11..."
+
+# Create the service in /etc/systemd/user (system-wide user service)
+mkdir -p /etc/systemd/user
+cat > /etc/systemd/user/wayland-spice-clipboard.service << 'EOF'
 [Unit]
-Description=SPICE Wayland Clipboard Bridge for KDE
-After=multi-user.target
+Description=Wayland primary selection to X11 clipboard bridge
+After=graphical-session.target
 
 [Service]
 Type=simple
 ExecStart=/usr/libexec/wayland-spice-clipboard.sh
-Restart=always
-RestartSec=3
+Restart=on-failure
+RestartSec=2
 
 [Install]
-WantedBy=multi-user.target
-SERVICE_EOF
-    
-    # Update ExecStart to use the correct script
-    sed -i "s|ExecStart=.*|ExecStart=$BRIDGE_SCRIPT|g" /etc/systemd/system/spice-clipboard-bridge.service
-    
-    systemctl daemon-reload
-    systemctl enable spice-clipboard-bridge.service 2>/dev/null || true
-    systemctl start spice-clipboard-bridge.service 2>/dev/null || true
-    log "✅ Clipboard bridge service enabled and started"
-else
-    log "⚠️  wl-paste or xclip not found - clipboard bridge skipped"
+WantedBy=default.target
+EOF
+
+log "✅ Clipboard bridge service created in /etc/systemd/user"
+
+# Reload systemd so it picks up the new service
+systemctl daemon-reload
+log "✅ Systemd reloaded"
+
+# Enable for all users on future graphical logins
+systemctl --global enable wayland-spice-clipboard.service
+log "✅ Clipboard bridge service enabled for all users"
+
+# Enable and start it now for users who are already logged in
+log "🔧 Starting clipboard bridge for currently logged-in users..."
+while read -r uid username; do
+    if [[ "${uid}" -ge 1000 && -d "/run/user/${uid}" ]]; then
+        log "  → Enabling for user: ${username} (UID: ${uid})"
+        if systemctl --user --machine="${username}@.host" enable --now wayland-spice-clipboard.service 2>/dev/null; then
+            log "    ✅ Service started for ${username}"
+        else
+            log "    ⚠️  Could not start service for ${username} (may not be logged in graphically)"
+        fi
+    fi
+done < <(loginctl list-users --no-legend 2>/dev/null || echo "")
+
+# Fallback: If loginctl didn't work, try for the main user
+if [ -d "/home/jonathon" ] && [ -d "/run/user/$(id -u jonathon)" ]; then
+    if ! systemctl --user --machine=jonathon@.host is-active wayland-spice-clipboard.service &>/dev/null; then
+        log "  → Fallback: Starting for user jonathon"
+        sudo -u jonathon systemctl --user daemon-reload
+        sudo -u jonathon systemctl --user enable --now wayland-spice-clipboard.service
+        log "    ✅ Service started for jonathon (fallback)"
+    fi
 fi
+
+log "✅ Clipboard bridge setup complete"
 
 # 11. Disable the service after first boot (since it's a one-time optimization)
 log "🔧 Disabling first-boot service..."

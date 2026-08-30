@@ -58,7 +58,7 @@ modules:
         destination: /usr/lib/sysusers.d/rigel-os.conf
 
   # 8. Install backgrounds
-  # from-file: ../modules/backgrounds.yml        
+  - from-file: ../modules/backgrounds.yml        
 
   # 9. Run the assembly script
   - type: script
