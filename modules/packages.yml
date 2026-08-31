@@ -20,14 +20,16 @@ install:
   # Torrent client
   - qbittorrent
  
- # Clipboard vm to host support  
+  # Clipboard vm to host support  
   - spice-vdagent
   - xclip
   - wl-clipboard
   
- # Konsole
- - adobe-source-code-pro-fonts
+  # Konsole
+  - adobe-source-code-pro-fonts
 
+  # Codecs rpmfusion 
+  - ffmpeg
   # Codecs rpmfusion 
   - ffmpeg
   - gstreamer1-plugins-ugly
