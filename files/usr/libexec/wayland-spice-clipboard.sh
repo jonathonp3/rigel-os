@@ -1,19 +1,21 @@
 #!/bin/bash
-# Simple clipboard bridge for Wayland → X11
+# Smart clipboard bridge - only syncs text, not files
 
-set -euo pipefail
-
-# Keep running forever
 while true; do
-    # Get the Wayland primary selection (selected text)
-    PRIMARY=$(wl-paste --primary 2>/dev/null || echo "")
+    # Get the MIME type of the current clipboard
+    MIME=$(wl-paste --list-types 2>/dev/null | head -1)
     
-    # If there's text, copy it to X11 clipboard
-    if [ -n "$PRIMARY" ]; then
-        echo "$PRIMARY" | xclip -selection clipboard -in 2>/dev/null
+    # Only sync if it's plain text and NOT a file list
+    if [[ "$MIME" == "text/plain" ]]; then
+        PRIMARY=$(wl-paste --primary 2>/dev/null || echo "")
+        if [ -n "$PRIMARY" ]; then
+            echo "$PRIMARY" | xclip -selection clipboard -in 2>/dev/null
+            echo "Synced text: $PRIMARY"  # Debug output
+        fi
     fi
+    # For text/uri-list (files), do nothing - let Dolphin handle it
     
-    # Wait a moment before checking again
     sleep 0.5
 done
+
 
