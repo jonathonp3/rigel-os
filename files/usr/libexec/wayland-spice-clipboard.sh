@@ -1,21 +1,21 @@
 #!/bin/bash
-# Smart clipboard bridge - only syncs text, not files
+# MIME-aware clipboard bridge - only syncs text, skips files
 
 while true; do
-    # Get the MIME type of the current clipboard
+    # Get the MIME type of the current clipboard content
     MIME=$(wl-paste --list-types 2>/dev/null | head -1)
-    
-    # Only sync if it's plain text and NOT a file list
-    if [[ "$MIME" == "text/plain" ]]; then
-        PRIMARY=$(wl-paste --primary 2>/dev/null || echo "")
-        if [ -n "$PRIMARY" ]; then
-            echo "$PRIMARY" | xclip -selection clipboard -in 2>/dev/null
-            echo "Synced text: $PRIMARY"  # Debug output
+
+    # Only sync if it's plain text
+    if [[ "$MIME" == "text/plain"* ]]; then
+        # Get the clipboard content
+        CLIP=$(wl-paste 2>/dev/null || echo "")
+        if [ -n "$CLIP" ]; then
+            # Sync to X11 clipboard
+            echo "$CLIP" | xclip -selection clipboard -in 2>/dev/null
         fi
     fi
-    # For text/uri-list (files), do nothing - let Dolphin handle it
-    
+    # If MIME is text/uri-list (files), do nothing
+
     sleep 0.5
 done
-
 
