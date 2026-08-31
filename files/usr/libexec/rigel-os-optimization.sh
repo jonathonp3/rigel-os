@@ -99,59 +99,6 @@ for app in "${flatpaks[@]}"; do
 done
 
 # 10. Setup clipboard bridge for Wayland → X11
-log "🔧 Setting up clipboard bridge for Wayland → X11..."
-
-# Create the service in /etc/systemd/user (system-wide user service)
-mkdir -p /etc/systemd/user
-cat > /etc/systemd/user/wayland-spice-clipboard.service << 'EOF'
-[Unit]
-Description=Wayland primary selection to X11 clipboard bridge
-After=graphical-session.target
-
-[Service]
-Type=simple
-ExecStart=/usr/libexec/wayland-spice-clipboard.sh
-Restart=on-failure
-RestartSec=2
-
-[Install]
-WantedBy=default.target
-EOF
-
-log "✅ Clipboard bridge service created in /etc/systemd/user"
-
-# Reload systemd so it picks up the new service
-systemctl daemon-reload
-log "✅ Systemd reloaded"
-
-# Enable for all users on future graphical logins
-systemctl --global enable wayland-spice-clipboard.service
-log "✅ Clipboard bridge service enabled for all users"
-
-# Enable and start it now for users who are already logged in
-log "🔧 Starting clipboard bridge for currently logged-in users..."
-while read -r uid username; do
-    if [[ "${uid}" -ge 1000 && -d "/run/user/${uid}" ]]; then
-        log "  → Enabling for user: ${username} (UID: ${uid})"
-        if systemctl --user --machine="${username}@.host" enable --now wayland-spice-clipboard.service 2>/dev/null; then
-            log "    ✅ Service started for ${username}"
-        else
-            log "    ⚠️  Could not start service for ${username} (may not be logged in graphically)"
-        fi
-    fi
-done < <(loginctl list-users --no-legend 2>/dev/null || echo "")
-
-# Fallback: If loginctl didn't work, try for the main user
-if [ -d "/home/jonathon" ] && [ -d "/run/user/$(id -u jonathon)" ]; then
-    if ! systemctl --user --machine=jonathon@.host is-active wayland-spice-clipboard.service &>/dev/null; then
-        log "  → Fallback: Starting for user jonathon"
-        sudo -u jonathon systemctl --user daemon-reload
-        sudo -u jonathon systemctl --user enable --now wayland-spice-clipboard.service
-        log "    ✅ Service started for jonathon (fallback)"
-    fi
-fi
-
-log "✅ Clipboard bridge setup complete"
 
 # 11. Disable the service after first boot (since it's a one-time optimization)
 log "🔧 Disabling first-boot service..."
