@@ -27,9 +27,6 @@ modules:
   # 6. Install the software
   - from-file: ../modules/packages.yml
   
-  # 7 Install clipboard bridge for KDE Wayland
-  - from-file: ../modules/clipboard-bridge.yml
-  
   # 8. 
   - type: files
     files:

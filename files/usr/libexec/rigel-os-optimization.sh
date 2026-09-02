@@ -98,7 +98,68 @@ for app in "${flatpaks[@]}"; do
     fi
 done
 
-# 10. Setup clipboard bridge for Wayland → X11
+# 10. Setup clipboard bridge (only if not already installed)
+log "🔧 Checking for clipboard bridge..."
+
+# Detect the real user
+REAL_USER=""
+if [ -n "$SUDO_USER" ]; then
+    REAL_USER="$SUDO_USER"
+elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
+    REAL_USER="$USER"
+else
+    # Try to get the logged-in user
+    REAL_USER=$(logname 2>/dev/null || echo "")
+fi
+
+# If still empty, fallback to first user
+if [ -z "$REAL_USER" ]; then
+    REAL_USER=$(getent passwd 1000 | cut -d: -f1 2>/dev/null || echo "jonathon")
+fi
+
+USER_HOME="/home/$REAL_USER"
+SCRIPT_PATH="$USER_HOME/.local/bin/wayland-spice-clipboard.sh"
+
+log "📝 Installing for user: $REAL_USER (home: $USER_HOME)"
+
+if [ -f "$SCRIPT_PATH" ]; then
+    log "✅ Clipboard bridge already installed for $REAL_USER, skipping"
+else
+    log "📦 Installing clipboard bridge for $REAL_USER..."
+    
+    # Clone the repository
+    git clone https://github.com/jonathonp3/kde-wayland-clipboard-bridge /tmp/clipboard-bridge
+    cd /tmp/clipboard-bridge
+    chmod +x install.sh
+    
+    # Run the install script as the real user
+    su - "$REAL_USER" -c "./install.sh"
+    
+    # Clean up
+    cd /
+    rm -rf /tmp/clipboard-bridge
+    
+    if [ -f "$SCRIPT_PATH" ]; then
+        log "✅ Clipboard bridge installed successfully for $REAL_USER"
+    else
+        log "⚠️  Clipboard bridge installation failed"
+    fi
+fi
+
+# 11. Disable the service after first boot
+log "🔧 Disabling first-boot service..."
+systemctl disable rigel-os-optimization.service 2>/dev/null || true
+log "✅ Service disabled for future boots"
+
+# 11. Disable the service after first boot
+log "🔧 Disabling first-boot service..."
+systemctl disable rigel-os-optimization.service 2>/dev/null || true
+log "✅ Service disabled for future boots"
+
+# 11. Disable the service after first boot
+log "🔧 Disabling first-boot service..."
+systemctl disable rigel-os-optimization.service 2>/dev/null || true
+log "✅ Service disabled for future boots"
 
 # 11. Disable the service after first boot (since it's a one-time optimization)
 log "🔧 Disabling first-boot service..."

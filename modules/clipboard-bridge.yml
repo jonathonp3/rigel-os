@@ -1,6 +1,0 @@
-# yaml-language-server: $schema=https://schema.blue-build.org/module-v1.json
-type: files
-
-files:
-  - source: usr/libexec/wayland-spice-clipboard.sh
-    destination: /usr/libexec/wayland-spice-clipboard.sh
