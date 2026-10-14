@@ -1,0 +1,4 @@
+docker:
+  ghcr.io/jonathonp3:
+    use-sigstore-attachments: true
+
